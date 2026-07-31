@@ -22,11 +22,17 @@ fun PersonListView(
     modifier: Modifier = Modifier,
     uiState: PersonListUiState,
     imageMap: Map<String, String>,
-    onSearchQueryChanged: (String) -> Unit,
-    onPersonClick: (Person) -> Unit,
     onLoadNextPage: () -> Unit,
+    onPersonClick: (Person) -> Unit,
+    onSearchQueryChanged: (String) -> Unit,
+    onGenderFilterChanged: (String?) -> Unit,
+    onSortOptionChanged: (SortOption) -> Unit,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.statusBars)
+    ) {
         OutlinedTextField(
             value = uiState.searchQuery,
             onValueChange = onSearchQueryChanged,
@@ -37,21 +43,61 @@ fun PersonListView(
             singleLine = true
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Sort by:",
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            FilterChip(
+                selected = uiState.genderFilter == "male",
+                onClick = { onGenderFilterChanged(if (uiState.genderFilter == "male") null else "male") },
+                label = { Text("Male") }
+            )
+            FilterChip(
+                selected = uiState.genderFilter == "female",
+                onClick = { onGenderFilterChanged(if (uiState.genderFilter == "female") null else "female") },
+                label = { Text("Female") }
+            )
+            FilterChip(
+                selected = uiState.sortOption == SortOption.NAME,
+                onClick = { onSortOptionChanged(SortOption.NAME) },
+                label = { Text("A-Z") }
+            )
+            FilterChip(
+                selected = uiState.sortOption == SortOption.BIRTH_YEAR,
+                onClick = { onSortOptionChanged(SortOption.BIRTH_YEAR) },
+                label = { Text("Birth Year") }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        val displayedPeople = uiState.people
+            .filter { uiState.genderFilter == null || it.gender == uiState.genderFilter }
+            .let { list ->
+                when (uiState.sortOption) {
+                    SortOption.NAME -> list.sortedBy { it.name }
+                    SortOption.BIRTH_YEAR -> list.sortedBy { it.birthYear }
+                }
+            }
+
         when {
             uiState.errorMessage != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = uiState.errorMessage)
                 }
             }
 
             uiState.people.isEmpty() && uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
@@ -61,7 +107,7 @@ fun PersonListView(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    items(uiState.people) { person ->
+                    items(displayedPeople) { person ->
                         PersonListItem(
                             person = person,
                             imageUrl = imageMap.imageFor(person),
@@ -110,9 +156,7 @@ private fun PersonListItem(person: Person, imageUrl: String?, onClick: () -> Uni
 
 @Composable
 private fun LaunchedPagination(onLoadNextPage: () -> Unit) {
-    LaunchedEffect(Unit) {
-        onLoadNextPage()
-    }
+    LaunchedEffect(Unit) { onLoadNextPage() }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,6 +190,8 @@ private fun PersonListViewPreview() {
         uiState = sampleState,
         imageMap = emptyMap(),
         onSearchQueryChanged = {},
+        onGenderFilterChanged = {},
+        onSortOptionChanged = {},
         onPersonClick = {},
         onLoadNextPage = {}
     )

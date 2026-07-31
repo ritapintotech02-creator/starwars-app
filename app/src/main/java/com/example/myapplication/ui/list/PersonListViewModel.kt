@@ -2,6 +2,7 @@ package com.example.myapplication.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.model.Person
 import com.example.myapplication.data.remote.ImageApiInstance
 import com.example.myapplication.data.repository.PersonRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +61,26 @@ class PersonListViewModel(
         if (_uiState.value.hasNextPage && !_uiState.value.isLoading) {
             loadPeople(page = _uiState.value.currentPage + 1)
         }
+    }
+
+    fun onGenderFilterChanged(gender: String?) {
+        _uiState.value = _uiState.value.copy(genderFilter = gender)
+    }
+
+    fun onSortOptionChanged(option: SortOption) {
+        _uiState.value = _uiState.value.copy(sortOption = option)
+    }
+
+    fun getDisplayedPeople(): List<Person> {
+        val state = _uiState.value
+        return state.people
+            .filter { state.genderFilter == null || it.gender == state.genderFilter }
+            .let { list ->
+                when (state.sortOption) {
+                    SortOption.NAME -> list.sortedBy { it.name }
+                    SortOption.BIRTH_YEAR -> list.sortedBy { it.birthYear }
+                }
+            }
     }
 
     private fun loadImages() {
