@@ -27,8 +27,7 @@ fun StarWarsNavHost() {
     val navController = rememberNavController()
     val listViewModel: PersonListViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = ROUTE_LIST) {
-
+    NavHost(navController = navController, startDestination = ROUTE_SPLASH) {
         composable(ROUTE_SPLASH) {
             SplashScreen(
                 onFinished = {
@@ -51,7 +50,6 @@ fun StarWarsNavHost() {
                 }
             )
         }
-
         composable(
             route = ROUTE_DETAIL,
             arguments = listOf(navArgument(ARG_PERSON_NAME) { type = NavType.StringType })
@@ -60,7 +58,6 @@ fun StarWarsNavHost() {
             val uiState by listViewModel.uiState.collectAsState()
             val imageMap by listViewModel.imageMap.collectAsState()
             val person = uiState.people.find { it.name == personName }
-
             if (person != null) {
                 PersonDetailScreen(
                     person = person,
