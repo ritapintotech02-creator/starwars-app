@@ -13,7 +13,11 @@ import com.example.myapplication.data.model.imageFor
 import com.example.myapplication.ui.list.PersonListScreen
 import com.example.myapplication.ui.list.PersonListViewModel
 import com.example.myapplication.ui.detail.PersonDetailScreen
+import com.example.myapplication.ui.home.HomeScreen
+import com.example.myapplication.ui.splash.SplashScreen
 
+private const val ROUTE_SPLASH = "splash"
+private const val ROUTE_HOME = "home"
 private const val ROUTE_LIST = "list"
 private const val ROUTE_DETAIL = "detail/{personName}"
 private const val ARG_PERSON_NAME = "personName"
@@ -24,6 +28,20 @@ fun StarWarsNavHost() {
     val listViewModel: PersonListViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = ROUTE_LIST) {
+
+        composable(ROUTE_SPLASH) {
+            SplashScreen(
+                onFinished = {
+                    navController.navigate(ROUTE_HOME) {
+                        popUpTo(ROUTE_SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(ROUTE_HOME) {
+            HomeScreen(onCharactersClick = { navController.navigate(ROUTE_LIST) })
+        }
 
         composable(ROUTE_LIST) {
             PersonListScreen(
