@@ -9,8 +9,8 @@ import okhttp3.MediaType.Companion.toMediaType
 
 object RetrofitInstance {
 
-    private const val BASE_URL = "https://swapi.dev/api/"
-
+    //private const val BASE_URL = "https://swapi.dev/api/"
+    private const val BASE_URL = "https://swapi.py4e.com/api/"
     private val json = Json { ignoreUnknownKeys = true }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
