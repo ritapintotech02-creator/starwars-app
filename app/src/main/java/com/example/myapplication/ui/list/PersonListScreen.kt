@@ -9,17 +9,19 @@ import com.example.myapplication.data.model.Person
 
 @Composable
 fun PersonListScreen(
-    onPersonClick: (Person) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PersonListViewModel = viewModel()
+    viewModel: PersonListViewModel = viewModel(),
+    onPersonClick: (Person) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsState()
+    val imageMap by viewModel.imageMap.collectAsState()
 
     PersonListView(
-        uiState = uiState,
-        onSearchQueryChanged = viewModel::onSearchQueryChanged,
+        uiState = state,
+        imageMap = imageMap,
+        onSearchQueryChanged = { query -> viewModel.onSearchQueryChanged(query) },
         onPersonClick = onPersonClick,
-        onLoadNextPage = viewModel::loadNextPage,
+        onLoadNextPage = { viewModel.loadNextPage() },
         modifier = modifier
     )
 }

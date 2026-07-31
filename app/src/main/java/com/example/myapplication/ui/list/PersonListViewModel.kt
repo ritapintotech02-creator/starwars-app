@@ -2,6 +2,7 @@ package com.example.myapplication.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.remote.ImageApiInstance
 import com.example.myapplication.data.repository.PersonRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,9 +15,12 @@ class PersonListViewModel(
 
     private val _uiState = MutableStateFlow(PersonListUiState())
     val uiState: StateFlow<PersonListUiState> = _uiState.asStateFlow()
+    private val _imageMap = MutableStateFlow<Map<String, String>>(emptyMap())
+    val imageMap: StateFlow<Map<String, String>> = _imageMap.asStateFlow()
 
     init {
         loadPeople()
+        loadImages()
     }
 
     fun loadPeople(page: Int = 1) {
@@ -55,6 +59,18 @@ class PersonListViewModel(
     fun loadNextPage() {
         if (_uiState.value.hasNextPage && !_uiState.value.isLoading) {
             loadPeople(page = _uiState.value.currentPage + 1)
+        }
+    }
+
+    private fun loadImages() {
+        viewModelScope.launch {
+            try {
+                val images = ImageApiInstance.api.getAllCharacterImages()
+                _imageMap.value = images
+                    .filter { it.image != null }
+                    .associate { it.name.lowercase() to it.image!! }
+            } catch (e: Exception) {
+            }
         }
     }
 }
